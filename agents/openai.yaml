@@ -1,0 +1,4 @@
+interface:
+  display_name: "R-writing"
+  short_description: "Readable R scripts and clear figures for journal articles"
+  default_prompt: "Use $r-writing to write R code I can run section by section. Use six sections, %>% pipelines, snake_case names, separate ggplot layers, packages loaded at the top, and straightforward paths. Prefer familiar functions; explain less common ones briefly when they offer a practical benefit. Put parameters where they are used, keep steps easy to inspect, set a seed before random operations, and finish with sessionInfo(). Design figures for journal articles, choose colors to suit the data, keep only necessary text inside plots, and inspect exported figures. Add brief notes on input format, parameters to edit, and outputs."
