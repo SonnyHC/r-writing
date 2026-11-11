@@ -1,4 +1,4 @@
 interface:
   display_name: "R-writing"
   short_description: "Short R scripts for clinicians who know basic R"
-  default_prompt: "Use $r-writing to write a short R script for a clinician who knows basic R. Use familiar functions and short pipelines, put parameters where I can edit them, and name only results I need to inspect, reuse, or export. Use six sections for a complete script and give brief usage notes. When I need a figure, use the journal style described in the skill."
+  default_prompt: "Use $r-writing to write a short R script for a clinician who knows basic R. Use familiar functions and short pipelines. Keep variables that the calculation needs or that help me follow a step, and put important parameters in the calls where I can edit them. Use six sections for a complete script and give brief usage notes. When I need a figure, use the journal style described in the skill."

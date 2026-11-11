@@ -2,7 +2,7 @@
 
 An agent skill for clinicians who know basic R and want short scripts they can run and edit one section at a time.
 
-The 13 rules cover writing, refactoring, and reviewing R code. Short `%>%` pipelines combine steps that run once. Name a result when you need to inspect, reuse, or export it, and write important settings directly in the calls they affect. The plotting rules cover layout, color choices, checks of exported figures, and concise labels.
+The 13 rules cover writing, refactoring, and reviewing R code. Use short `%>%` pipelines for steps that read clearly together. Keep variables the calculation needs and name intermediate results when they help explain a step, even if they are used only once. Write important settings directly in the calls they affect. The plotting rules cover layout, color choices, checks of exported figures, and concise labels.
 
 The skill describes coding and presentation style. The task determines the analysis method and its parameters.
 

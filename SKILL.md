@@ -1,6 +1,6 @@
 ---
 name: r-writing
-description: Write, refactor, and review R scripts for clinicians who know basic R. Use familiar functions, short tidyverse pipelines, and few named objects. Put parameters where the reader will edit them. Organize full scripts into six sections and design figures for journal articles.
+description: Write, refactor, and review R scripts for clinicians who know basic R. Use familiar functions, short tidyverse pipelines, and descriptive variables for calculations and intermediate results. Put parameters where the reader will edit them. Organize full scripts into six sections and design figures for journal articles.
 ---
 
 # R-writing
@@ -30,7 +30,7 @@ Keep this section order and preserve computational dependencies. When the user a
 
 - Prefer `%>%` for data frame transformations and retain it as the default pipe. Combine it with familiar base R functions when that makes the code easy to understand and edit.
 - Prefer `select()`, `filter()`, `mutate()`, `summarise()`, `arrange()`, `pivot_longer()`, and `*_join()` with explicit join keys.
-- Combine consecutive transformations that run once in a short pipeline. Break at a result the reader needs to inspect, reuse, or export.
+- Combine consecutive transformations in a short pipeline when they read clearly together. Split the pipeline when a named intermediate would help the reader follow a step.
 - Keep clear vectorized expressions where they fit. Avoid repeated data structure conversions just to add a pipe.
 - Keep each pipeline short enough to follow and run on its own. Preserve steps that affect the result when simplifying the code.
 - Use `<-` for assignment, two-space indentation, and full `TRUE`/`FALSE` values. Put arguments on separate lines in long calls.
@@ -47,7 +47,7 @@ Keep this section order and preserve computational dependencies. When the user a
 - Put `ggplot()`, each `geom_*()` and `stat_*()`, scales, coordinates, labels, and themes on separate lines or in separate multiline calls. Place `+` at the end of the preceding line.
 - Put each mapping argument inside `aes()` on its own line. Keep multiple layers or mappings off the same line.
 - Split calls to `labs()`, `theme()`, and geometric layers across lines when they have several arguments.
-- Name plots that need inspection, reuse, or export. Set `plot`, dimensions, and units explicitly in `ggsave()`.
+- Give plot objects descriptive names. Set `plot`, dimensions, and units explicitly in `ggsave()`.
 
 This boxplot uses columns already present in `clean_data`. The horizontal axis identifies each category, so the legend would repeat those labels. The plot has a name for export.
 
@@ -80,14 +80,15 @@ Keep the section headings and comment only on important decisions. Explain why a
 
 ### 7. Name useful results and share plot settings when needed
 
-- Name a result only when the reader needs to inspect, reuse, or export it. Give raw and cleaned data distinct names when both are needed. Keep using the same data frame across sections when it already contains the required columns, including when plotting. Let these uses determine how many objects to keep.
+- Keep variables the calculation needs, such as a fitted model or a running total in a loop. A named intermediate can make a step easier to follow even when it is used only once. Also keep results the reader wants to inspect, reuse, or export.
+- Remove redundant aliases and duplicate copies. Give raw and cleaned data distinct names when both are needed. Use the existing data frame directly when it already contains the columns for the next step or plot.
 - Define and reuse `plot_theme` and `plot_colors` near the plots in "Visualize" when several figures share them. Put settings for a single plot directly in its layers. Use named vectors for categorical colors, with names matching the actual categories. Write dimensions, point sizes, opacity, and similar values where they are used.
 
 ### 8. Write parameters where they are used
 
 - Put thresholds, groups, test methods, adjustment methods, confidence levels, resampling counts, and export settings directly in the relevant calls or filter expressions. This lets the user inspect results and edit the corresponding code in place.
 - Write an important choice explicitly in its call, as in `p.adjust(p_value, method = "BH")` when the analysis uses that adjustment. Write a threshold once in its filter, then reuse the result or flag in subsequent calculations, plots, and exports.
-- Omit one-use parameter variables, preliminary parameter blocks, and configuration lists by default. Use centralized configuration when the user explicitly requests it.
+- Omit variables that merely pass a value to a call without making the code easier to follow. Keep parameters in their calls by default, and use a separate parameter block or configuration list when the user requests centralized settings.
 - Set a seed only when there is a random operation, directly before that operation, such as `set.seed(123)`. Omit seed settings for deterministic calculations.
 - Make `sessionInfo()` the last executable statement in a complete script to report the runtime environment.
 
