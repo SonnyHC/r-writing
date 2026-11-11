@@ -1,17 +1,17 @@
 ---
 name: r-writing
-description: Write, refactor, and review R code with six sections, tidyverse and magrittr pipes, snake_case names, and ggplot layers on separate lines. Use familiar functions, straightforward paths, distinct stage objects, and parameters written where they are used. Keep scripts easy to run step by step, set seeds when needed, end with sessionInfo, and add brief usage notes. Use journal-style figures with colors chosen for the content, concise labels, and checks of exported plots. Use for R scripts and code style cleanup.
+description: Write, refactor, and review R scripts for clinicians who know basic R. Use familiar functions, short tidyverse pipelines, and few named objects. Put parameters where the reader will edit them. Organize full scripts into six sections and design figures for journal articles.
 ---
 
 # R-writing
 
-This skill covers R code structure, naming, formatting, dependencies, paths, reproducibility, comments, figure design, and output format. Examples illustrate code style. The current task determines the analysis goals, methods, parameters, and workflow. Preserve the meaning of computations when refactoring for style. By default, write ordinary analysis scripts that the user can run in sections, inspect, and edit in place.
+Write for clinicians who know basic R and want to run, inspect, and edit their own analyses. Choose the simplest script that does the requested job. Preserve the meaning of computations when refactoring, and keep choices that affect the results visible in the code.
 
 ## Thirteen writing rules
 
 ### 1. Organize code into six sections
 
-Use these comment headings in order in a complete script, each on its own line:
+In a complete script, use the following comment headings in order, each on its own line.
 
 ```r
 # 1. Load packages
@@ -22,12 +22,7 @@ Use these comment headings in order in a complete script, each on its own line:
 # 6. Export results
 ```
 
-- Load packages: load the packages the script needs at the top.
-- Import data: read inputs directly, with paths in the read calls and no preliminary parameter block.
-- Clean data: group the data preparation steps required by the task.
-- Run analysis: write the steps in order using existing package functions, vectorized expressions, and clear conventional loops.
-- Visualize: set plot options near their use, define any shared themes and colors, and create named plot objects.
-- Export results: save the requested outputs together, then call `sessionInfo()`.
+Load the required packages at the top. Read inputs with paths in the read calls, then group the cleaning steps together. Run the analysis in order using familiar functions, vectorized expressions, or clear loops. Set plot options near the plots. Save the requested outputs together and finish with `sessionInfo()`.
 
 Keep this section order and preserve computational dependencies. When the user asks for a function or plotting fragment, return that fragment with the relevant section heading.
 
@@ -35,9 +30,9 @@ Keep this section order and preserve computational dependencies. When the user a
 
 - Prefer `%>%` for data frame transformations and retain it as the default pipe. Combine it with familiar base R functions when that makes the code easy to understand and edit.
 - Prefer `select()`, `filter()`, `mutate()`, `summarise()`, `arrange()`, `pivot_longer()`, and `*_join()` with explicit join keys.
-- Keep intermediate objects when they will be reused, hold a stage result, or make the code easier to read. Combine consecutive one-time transformations in a pipeline.
+- Combine consecutive transformations that run once in a short pipeline. Break at a result the reader needs to inspect, reuse, or export.
 - Keep clear vectorized expressions where they fit. Avoid repeated data structure conversions just to add a pipe.
-- Split code into stages that are easy to run, inspect, and modify. Avoid overly long pipelines.
+- Keep each pipeline short enough to follow and run on its own. Preserve steps that affect the result when simplifying the code.
 - Use `<-` for assignment, two-space indentation, and full `TRUE`/`FALSE` values. Put arguments on separate lines in long calls.
 
 ### 3. Use meaningful snake_case names
@@ -52,53 +47,47 @@ Keep this section order and preserve computational dependencies. When the user a
 - Put `ggplot()`, each `geom_*()` and `stat_*()`, scales, coordinates, labels, and themes on separate lines or in separate multiline calls. Place `+` at the end of the preceding line.
 - Put each mapping argument inside `aes()` on its own line. Keep multiple layers or mappings off the same line.
 - Split calls to `labs()`, `theme()`, and geometric layers across lines when they have several arguments.
-- Give plot objects clear names. Set `plot`, dimensions, and units explicitly in `ggsave()`.
+- Name plots that need inspection, reuse, or export. Set `plot`, dimensions, and units explicitly in `ggsave()`.
 
-This fragment shows how to format layers and mappings. Define `plot_theme` and `plot_colors` in the visualization section to suit the current figures, then reuse them across related plots:
+This boxplot uses columns already present in `clean_data`. The horizontal axis identifies each category, so the legend would repeat those labels. The plot has a name for export.
 
 ```r
-distribution_plot <- plot_data %>%
-  ggplot(
-    aes(
-      x = category,
-      y = measured_value,
-      fill = category
-    )
-  ) +
-  geom_boxplot(alpha = 0.6) +
-  scale_fill_manual(values = plot_colors) +
+distribution_plot <- ggplot(
+  clean_data,
+  aes(
+    x = category,
+    y = measured_value,
+    fill = category
+  )
+) +
+  geom_boxplot(show.legend = FALSE) +
   labs(
     x = NULL,
-    y = "Measured value",
-    fill = "Category"
-  ) +
-  plot_theme
+    y = "Measured value"
+  )
 ```
 
 ### 5. Explain the purpose in comments
 
-Keep the section headings and comment only on important decisions. Explain why a step is written that way; skip line-by-line descriptions of functions and statements. For example, "Fix the category order to keep it consistent across plots" explains the reason for a choice.
+Keep the section headings and comment only on important decisions. Explain why a step is written that way. For example, "Fix the category order to keep it consistent across plots" explains a choice that the code alone might leave unclear.
 
 ### 6. Load packages at the top and write paths where they are used
 
 - Keep all package-loading statements in the opening "Load packages" section. Use `package::function()` later when it helps identify a function's source.
 - Load required packages with `library()` at the top. For optional features, store an availability flag from `requireNamespace(..., quietly = TRUE)` there, then call functions through `package::function()`. Omit custom wrappers for package loading.
-- Use familiar path handling by default: set the working directory with `setwd("path/to/project")` in "Import data", then write relative paths directly in read and write calls. Use `file.path()` when constructing paths.
-- Use the real directory of the user's open project. Write paths where they are used, without a central list of path variables or configuration settings.
-- Use tools such as `here` when they help: for example, when the project already uses them or needs automatic location detection when run from different directories or moved. Treat them as optional dependencies and briefly explain their purpose in a comment at first use.
+- When the working directory is already the project root, use relative paths such as `"data/input.csv"` directly in read and write calls. Use `setwd()` in "Import data" only when the working directory needs to change, and use the actual project directory.
+- Use `file.path()` when a path needs to be built from parts. A tool such as `here` is useful when the project already relies on it or the script needs to locate the project from different working directories. Briefly explain its purpose on first use.
 
-### 7. Keep stage objects separate and reuse shared themes and colors
+### 7. Name useful results and share plot settings when needed
 
-- Distinguish objects such as `raw_data`, `clean_data`, `analysis_result`, `plot_data`, and `result_plot`. Preserve the original input and avoid repeatedly overwriting one variable across stages.
-- Keep a clearly named object for each useful stage. Use pipes for one-time transformations within a stage and avoid unnecessary copies.
+- Name a result only when the reader needs to inspect, reuse, or export it. Give raw and cleaned data distinct names when both are needed. Keep using the same data frame across sections when it already contains the required columns, including when plotting. Let these uses determine how many objects to keep.
 - Define and reuse `plot_theme` and `plot_colors` near the plots in "Visualize" when several figures share them. Put settings for a single plot directly in its layers. Use named vectors for categorical colors, with names matching the actual categories. Write dimensions, point sizes, opacity, and similar values where they are used.
 
 ### 8. Write parameters where they are used
 
 - Put thresholds, groups, test methods, adjustment methods, confidence levels, resampling counts, and export settings directly in the relevant calls or filter expressions. This lets the user inspect results and edit the corresponding code in place.
-- By default, omit parameter blocks at the top or in section 2, `params <- list(...)`, and configuration objects. Also omit scalar variables such as `min_fpkm`, `fdr_cutoff`, and `random_seed` that only pass a value onward. Use centralized configuration when the user explicitly requests it.
-- Keep useful stage objects such as expression matrices, group tables, models, and filtered results. Write a filter's threshold once at the filtering step, then use that result or flag in subsequent calculations, plots, and exports.
-- For example, write a low-expression filter as `rowSums(expression_fpkm >= 1) >= 3`, a differential filter as `mutate(is_differential = fdr <= 0.05 & abs(log_fc) >= 1)`, and an adjustment method as `p.adjust(p_value, method = "BH")`. These values illustrate parameter placement; choose the actual values for the current analysis.
+- Write an important choice explicitly in its call, as in `p.adjust(p_value, method = "BH")` when the analysis uses that adjustment. Write a threshold once in its filter, then reuse the result or flag in subsequent calculations, plots, and exports.
+- Omit one-use parameter variables, preliminary parameter blocks, and configuration lists by default. Use centralized configuration when the user explicitly requests it.
 - Set a seed only when there is a random operation, directly before that operation, such as `set.seed(123)`. Omit seed settings for deterministic calculations.
 - Make `sessionInfo()` the last executable statement in a complete script to report the runtime environment.
 
@@ -114,11 +103,11 @@ Keep the section headings and comment only on important decisions. Explain why a
 
 ### 10. Add brief usage notes
 
-After the code, include only these three items, each in one sentence:
+After the code, give three usage notes in one sentence each.
 
-- **Input format:** required file types, fields, and directory locations.
-- **Parameters to change:** point to the statements or sections to edit, such as input paths, filter expressions, and plotting calls. Mention the seed statement when there are random operations.
-- **Outputs:** generated files, objects, and save locations.
+- State the required input file types, fields, and directory locations.
+- Identify the statements or sections to edit, such as input paths, filter expressions, and plotting calls. Mention the seed statement when there are random operations.
+- Name the output files and objects and give their save locations.
 
 For a code fragment, describe only its input objects, parameters, and outputs. Keep the notes consistent with the actual code.
 
@@ -137,7 +126,7 @@ Choose color values, palettes, base themes, and label angles for the current con
 
 ### 13. Keep text inside figures concise
 
-By default, retain concise axis names and units, necessary legends, panel labels, and statistical annotations required by the task. Omit large titles, subtitles, conclusions, method descriptions, parameter lists, and decorative text. Avoid duplicate labels and label only points of interest. Put explanations outside the figure; add a short title when it helps a figure stand on its own. After export, remove duplicate or irrelevant text. If necessary text is crowded or obscures data, adjust its position, font size, or layout.
+By default, retain concise axis names and units, necessary legends, panel labels, and statistical annotations required by the task. Omit large titles, subtitles, conclusions, method descriptions, parameter lists, and decorative text. Avoid duplicate labels and label only points of interest. Put explanations outside the figure. Add a short title when it helps a figure stand on its own. After export, remove duplicate or irrelevant text. If necessary text is crowded or obscures data, adjust its position, font size, or layout.
 
 ## Check before returning
 
